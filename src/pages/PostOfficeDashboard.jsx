@@ -96,6 +96,7 @@ const PostOfficeDashboard = () => {
     { name: "Post Office B", lat: 20.2981, lng: 85.8300, status: "moderate" },
     { name: "Post Office C", lat: 20.2995, lng: 85.8180, status: "unclean" },
   ];
+  
 
   return (
     <DashboardLayout role="post-office">
@@ -140,55 +141,92 @@ const PostOfficeDashboard = () => {
         </section>
 
         {/* 🗺️ Visible Map Section */}
-        <section className="bg-white rounded-2xl shadow-md p-8 mb-10">
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">
-            Postal Zone Map (Live Simulation)
-          </h2>
-          <div className="h-96 rounded-lg overflow-hidden">
-            <MapContainer
-              center={[20.2961, 85.8245]} // Centered around Bhubaneswar
-              zoom={13}
-              style={{ height: "100%", width: "100%" }}
-            >
-              <TileLayer
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              />
-              {postalZones.map((zone, idx) => (
-                <CircleMarker
-                  key={idx}
-                  center={[zone.lat, zone.lng]}
-                  radius={10}
-                  color={
-                    zone.status === "clean"
-                      ? "green"
-                      : zone.status === "moderate"
-                      ? "orange"
-                      : "red"
-                  }
-                  fillOpacity={0.7}
-                >
-                  <Tooltip>
-                    <span className="font-semibold">{zone.name}</span>
-                    <br />
-                    Status: {zone.status}
-                  </Tooltip>
-                </CircleMarker>
-              ))}
-            </MapContainer>
-          </div>
-          <div className="flex justify-around mt-6 text-sm text-gray-600">
-            <span className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-green-400"></span> Clean
-            </span>
-            <span className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-yellow-400"></span> Moderate
-            </span>
-            <span className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-red-400"></span> Needs Attention
-            </span>
-          </div>
-        </section>
+        {/* 🗺️ Postal Region Map Section */}
+<section className="bg-white rounded-2xl shadow-md p-8 mb-10">
+  <h2 className="text-2xl font-bold text-gray-800 mb-4">
+    Central Postal Division — Live Cleanliness Map
+  </h2>
+
+  <div className="h-96 rounded-lg overflow-hidden">
+    <MapContainer
+      center={[20.2961, 85.8245]} // Example: Bhubaneswar central area
+      zoom={15} // Closer zoom for visible region
+      style={{ height: "100%", width: "100%" }}
+    >
+      {/* OpenStreetMap visible base layer */}
+      <TileLayer
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+      />
+
+      {/* Example postal region cleanliness points */}
+      <CircleMarker
+        center={[20.2963, 85.8249]}
+        radius={10}
+        color="green"
+        fillOpacity={0.7}
+      >
+        <Tooltip>
+          <span className="font-semibold">Post Office Entrance</span>
+          <br />
+          Status: Clean ✅
+        </Tooltip>
+      </CircleMarker>
+
+      <CircleMarker
+        center={[20.2958, 85.8238]}
+        radius={10}
+        color="orange"
+        fillOpacity={0.7}
+      >
+        <Tooltip>
+          <span className="font-semibold">Sorting Area</span>
+          <br />
+          Status: Moderate ⚠️
+        </Tooltip>
+      </CircleMarker>
+
+      <CircleMarker
+        center={[20.2970, 85.8255]}
+        radius={10}
+        color="red"
+        fillOpacity={0.7}
+      >
+        <Tooltip>
+          <span className="font-semibold">Backyard Waste Zone</span>
+          <br />
+          Status: Needs Attention 🚨
+        </Tooltip>
+      </CircleMarker>
+
+      <CircleMarker
+        center={[20.2968, 85.8265]}
+        radius={10}
+        color="green"
+        fillOpacity={0.7}
+      >
+        <Tooltip>
+          <span className="font-semibold">Front Gate</span>
+          <br />
+          Status: Clean ✅
+        </Tooltip>
+      </CircleMarker>
+    </MapContainer>
+  </div>
+
+  <div className="flex justify-around mt-6 text-sm text-gray-600">
+    <span className="flex items-center gap-2">
+      <span className="w-3 h-3 rounded-full bg-green-400"></span> Clean
+    </span>
+    <span className="flex items-center gap-2">
+      <span className="w-3 h-3 rounded-full bg-yellow-400"></span> Moderate
+    </span>
+    <span className="flex items-center gap-2">
+      <span className="w-3 h-3 rounded-full bg-red-400"></span> Needs Attention
+    </span>
+  </div>
+</section>
+
 
         {/* Charts Section */}
         <section className="grid md:grid-cols-2 gap-8 mb-10">
@@ -302,6 +340,62 @@ const PostOfficeDashboard = () => {
             </table>
           </div>
         </section>
+                {/* 🚨 AI Challan Monitoring System Section */}
+<section className="bg-white rounded-2xl shadow-md p-8 mt-10 hover:shadow-xl transition">
+  <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+    <AlertCircle className="text-red-600" /> AI Challan Monitoring System
+  </h2>
+
+  <div className="grid md:grid-cols-3 sm:grid-cols-1 gap-6">
+    {[
+      {
+        id: 1,
+        image: "https://i.ibb.co/0GdYxZ8/litter1.jpg",
+        area: "Main Street",
+        timestamp: "2025-11-04 01:45 PM",
+        status: "Pending Verification",
+      },
+      {
+        id: 2,
+        image: "https://i.ibb.co/XtwhPbM/litter2.jpg",
+        area: "Station Road",
+        timestamp: "2025-11-04 12:20 PM",
+        status: "Pending Verification",
+      },
+      {
+        id: 3,
+        image: "https://i.ibb.co/ZV6nh6B/litter3.jpg",
+        area: "Park Avenue",
+        timestamp: "2025-11-03 10:10 AM",
+        status: "Identified - Reward ₹75",
+      },
+    ].map((incident) => (
+      <div
+        key={incident.id}
+        className="p-4 rounded-2xl shadow-lg hover:shadow-xl transition-all bg-white border"
+      >
+        <img
+          src={incident.image}
+          alt="Littering Incident"
+          className="rounded-xl mb-4 w-full h-48 object-cover"
+        />
+        <h2 className="text-lg font-semibold text-gray-800">{incident.area}</h2>
+        <p className="text-sm text-gray-500">🕒 {incident.timestamp}</p>
+        <p
+          className={`mt-2 text-sm font-bold ${
+            incident.status.includes("Identified")
+              ? "text-green-600"
+              : "text-red-500"
+          }`}
+        >
+          Status: {incident.status}
+        </p>
+      </div>
+    ))}
+  </div>
+</section>
+
+
 
         <footer className="text-center text-sm text-gray-600 mt-10">
           Swachhta & LiFE Zone Monitoring System • Empowering Sustainable

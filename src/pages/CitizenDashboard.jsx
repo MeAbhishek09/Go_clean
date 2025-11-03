@@ -11,6 +11,7 @@ import {
   Camera,
 } from "lucide-react";
 import DashboardLayout from "../components/DashboardLayout";
+import ChallanIdentify from "../components/ChallanIdentify";
 
 const CitizenDashboard = () => {
   const [reports, setReports] = useState([
@@ -274,7 +275,12 @@ const CitizenDashboard = () => {
               );
             })}
           </div>
+          
         </section>
+        <div className="relative z-10">
+        <ChallanIdentify />
+      </div>
+        
       </div>
     </DashboardLayout>
   );
