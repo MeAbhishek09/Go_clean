@@ -1,0 +1,98 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ===========================
+   🌿 Global Backgrounds & Gradients
+   =========================== */
+.bg-gradient-soft {
+  background: linear-gradient(to bottom right, #ecfdf5, #f0fdf4, #f0fdfa);
+}
+
+.bg-gradient-eco {
+  background: linear-gradient(to bottom right, #4ade80, #10b981, #14b8a6);
+}
+
+.bg-gradient-premium {
+  background: linear-gradient(90deg, #34d399, #10b981, #0d9488);
+}
+
+/* ===========================
+   🌱 Shadows & Glow Effects
+   =========================== */
+.shadow-soft {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.shadow-glow {
+  box-shadow: 0 0 25px rgba(16, 185, 129, 0.4);
+}
+
+/* ===========================
+   ✨ Animations
+   =========================== */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes shimmer {
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===========================
+   🌤️ Animation Utilities
+   =========================== */
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-slide-up {
+  animation: slide-up 1s ease forwards;
+}
+
+.animate-shimmer {
+  animation: shimmer 3s linear infinite;
+}
+
+/* ===========================
+   🪴 Text Styles
+   =========================== */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  color: #111827; /* Tailwind gray-900 */
+}
+
+p {
+  color: #374151; /* Tailwind gray-700 */
+}
+
+/* ===========================
+   💫 Utility Helpers
+   =========================== */
+.text-gradient {
+  background: linear-gradient(to right, #34d399, #10b981, #0d9488);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.border-gradient {
+  border-image: linear-gradient(to right, #34d399, #10b981, #0d9488) 1;
+}
