@@ -1,24 +1,88 @@
 import { useState } from "react";
 import {
+  MapContainer,
+  TileLayer,
+  CircleMarker,
+  Tooltip,
+} from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+
+import {
   MapPin,
   TrendingUp,
   CheckCircle,
   Clock,
   AlertCircle,
-  BarChart,
   Activity,
   ShieldCheck,
   Gauge,
+  Bell,
+  BarChart3,
+  PieChart as PieIcon,
 } from "lucide-react";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip as ReTooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  Legend,
+} from "recharts";
 import DashboardLayout from "../components/DashboardLayout";
 
 const PostOfficeDashboard = () => {
-  const [issues] = useState([
-    { id: 1, location: "Main Street", reporter: "#145", date: "2024-01-20", status: "pending", priority: "high" },
-    { id: 2, location: "Park Avenue", reporter: "#289", date: "2024-01-19", status: "in-progress", priority: "medium" },
-    { id: 3, location: "Market Road", reporter: "#034", date: "2024-01-18", status: "in-progress", priority: "high" },
-    { id: 4, location: "Station Road", reporter: "#567", date: "2024-01-20", status: "pending", priority: "low" },
+  const [trendData] = useState([
+    { day: "Mon", score: 80 },
+    { day: "Tue", score: 82 },
+    { day: "Wed", score: 85 },
+    { day: "Thu", score: 88 },
+    { day: "Fri", score: 87 },
+    { day: "Sat", score: 90 },
+    { day: "Sun", score: 92 },
   ]);
+
+  const [garbageStats] = useState([
+    { name: "Plastic", value: 40 },
+    { name: "Organic", value: 30 },
+    { name: "Paper", value: 15 },
+    { name: "Metal", value: 10 },
+    { name: "Other", value: 5 },
+  ]);
+
+  const COLORS = ["#16a34a", "#22c55e", "#86efac", "#15803d", "#4ade80"];
+
+  const [detections] = useState([
+    {
+      id: 1,
+      area: "Main Street",
+      category: "Plastic Waste",
+      timestamp: "2025-11-03 09:42:10",
+      imageUrl: "https://placehold.co/120x80?text=Plastic+Waste",
+    },
+    {
+      id: 2,
+      area: "Station Road",
+      category: "Wet Garbage",
+      timestamp: "2025-11-03 10:10:34",
+      imageUrl: "https://placehold.co/120x80?text=Wet+Garbage",
+    },
+    {
+      id: 3,
+      area: "Park Avenue",
+      category: "Paper Litter",
+      timestamp: "2025-11-03 10:44:55",
+      imageUrl: "https://placehold.co/120x80?text=Paper+Litter",
+    },
+  ]);
+
+  const handleNotify = (area) => {
+    alert(`Notification sent to nearby workers for cleanup at ${area}!`);
+  };
 
   const statusColors = {
     pending: "text-yellow-600 bg-yellow-100",
@@ -26,16 +90,25 @@ const PostOfficeDashboard = () => {
     resolved: "text-green-600 bg-green-100",
   };
 
+  // Dummy map data (replace with real post office coordinates later)
+  const postalZones = [
+    { name: "Post Office A", lat: 20.2961, lng: 85.8245, status: "clean" },
+    { name: "Post Office B", lat: 20.2981, lng: 85.8300, status: "moderate" },
+    { name: "Post Office C", lat: 20.2995, lng: 85.8180, status: "unclean" },
+  ];
+
   return (
     <DashboardLayout role="post-office">
       <div className="p-8 text-gray-800">
         {/* Header */}
         <header className="text-center mb-10">
-          <h1 className="text-4xl font-bold text-emerald-600 mb-2">Zone Manager Dashboard</h1>
+          <h1 className="text-4xl font-bold text-emerald-600 mb-2">
+            Zone Manager Dashboard
+          </h1>
           <p className="text-gray-600">Zone A - Central Division</p>
         </header>
 
-        {/* Overview Stats */}
+        {/* Overview */}
         <section className="grid md:grid-cols-4 gap-6 mb-10">
           <div className="bg-white rounded-2xl shadow-md p-6 text-center hover:shadow-lg transition">
             <TrendingUp className="h-8 w-8 mx-auto text-green-600 mb-2" />
@@ -66,16 +139,44 @@ const PostOfficeDashboard = () => {
           </div>
         </section>
 
-        {/* Zone Map Section */}
-        <section className="bg-white rounded-2xl shadow-md p-8 mb-10 hover:shadow-xl transition">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-bold text-gray-800">Zone Map</h2>
-            <span className="text-gray-500 text-sm">12 sub-areas monitored</span>
+        {/* 🗺️ Visible Map Section */}
+        <section className="bg-white rounded-2xl shadow-md p-8 mb-10">
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">
+            Postal Zone Map (Live Simulation)
+          </h2>
+          <div className="h-96 rounded-lg overflow-hidden">
+            <MapContainer
+              center={[20.2961, 85.8245]} // Centered around Bhubaneswar
+              zoom={13}
+              style={{ height: "100%", width: "100%" }}
+            >
+              <TileLayer
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              />
+              {postalZones.map((zone, idx) => (
+                <CircleMarker
+                  key={idx}
+                  center={[zone.lat, zone.lng]}
+                  radius={10}
+                  color={
+                    zone.status === "clean"
+                      ? "green"
+                      : zone.status === "moderate"
+                      ? "orange"
+                      : "red"
+                  }
+                  fillOpacity={0.7}
+                >
+                  <Tooltip>
+                    <span className="font-semibold">{zone.name}</span>
+                    <br />
+                    Status: {zone.status}
+                  </Tooltip>
+                </CircleMarker>
+              ))}
+            </MapContainer>
           </div>
-          <div className="h-64 bg-gradient-to-br from-green-50 to-teal-50 rounded-xl flex items-center justify-center text-gray-500 border">
-            <p>🗺️ Interactive Zone Heatmap</p>
-          </div>
-
           <div className="flex justify-around mt-6 text-sm text-gray-600">
             <span className="flex items-center gap-2">
               <span className="w-3 h-3 rounded-full bg-green-400"></span> Clean
@@ -89,86 +190,122 @@ const PostOfficeDashboard = () => {
           </div>
         </section>
 
-        {/* Performance Metrics */}
-        <section className="bg-white rounded-2xl shadow-md p-8 mb-10 hover:shadow-xl transition">
-          <h2 className="text-2xl font-bold text-gray-800 mb-6">Performance Metrics</h2>
-          <div className="grid md:grid-cols-3 gap-6">
-            <div className="bg-emerald-50 p-6 rounded-xl text-center">
-              <Activity className="h-8 w-8 text-emerald-600 mx-auto mb-2" />
-              <p className="text-sm text-gray-500">AI Cleanliness Score</p>
-              <p className="text-2xl font-bold text-gray-800">87/100</p>
-            </div>
-
-            <div className="bg-green-50 p-6 rounded-xl text-center">
-              <ShieldCheck className="h-8 w-8 text-green-600 mx-auto mb-2" />
-              <p className="text-sm text-gray-500">Resolution Rate</p>
-              <p className="text-2xl font-bold text-gray-800">75%</p>
-            </div>
-
-            <div className="bg-teal-50 p-6 rounded-xl text-center">
-              <Gauge className="h-8 w-8 text-teal-600 mx-auto mb-2" />
-              <p className="text-sm text-gray-500">Sustainability Index</p>
-              <p className="text-2xl font-bold text-gray-800">82%</p>
-            </div>
+        {/* Charts Section */}
+        <section className="grid md:grid-cols-2 gap-8 mb-10">
+          <div className="bg-white rounded-2xl shadow-md p-8 hover:shadow-xl transition">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+              <BarChart3 className="text-emerald-600" /> Cleanliness Trend
+            </h2>
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={trendData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="day" />
+                <YAxis />
+                <ReTooltip />
+                <Line
+                  type="monotone"
+                  dataKey="score"
+                  stroke="#16a34a"
+                  strokeWidth={3}
+                  dot={{ r: 4 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-6 mt-6">
-            <div className="bg-white border rounded-xl p-4 text-center">
-              <p className="text-3xl font-bold text-gray-800">12</p>
-              <p className="text-sm text-gray-500">Total Areas</p>
-            </div>
-            <div className="bg-white border rounded-xl p-4 text-center">
-              <p className="text-3xl font-bold text-gray-800">92%</p>
-              <p className="text-sm text-gray-500">Coverage</p>
-            </div>
-            <div className="bg-white border rounded-xl p-4 text-center">
-              <p className="text-3xl font-bold text-gray-800">4.5</p>
-              <p className="text-sm text-gray-500">Avg Response</p>
-            </div>
+          <div className="bg-white rounded-2xl shadow-md p-8 hover:shadow-xl transition">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+              <PieIcon className="text-emerald-600" /> Garbage Classification
+            </h2>
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie
+                  data={garbageStats}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  outerRadius={100}
+                  fill="#8884d8"
+                  dataKey="value"
+                  label={({ name, percent }) =>
+                    `${name} ${(percent * 100).toFixed(0)}%`
+                  }
+                >
+                  {garbageStats.map((entry, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={COLORS[index % COLORS.length]}
+                    />
+                  ))}
+                </Pie>
+                <ReTooltip />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
           </div>
         </section>
 
-        {/* Active Issues */}
+        {/* AI Table */}
         <section className="bg-white rounded-2xl shadow-md p-8 hover:shadow-xl transition">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-gray-800">Active Issues</h2>
-            <span className="px-4 py-1 bg-gray-100 rounded-full text-sm">{issues.length} items</span>
+            <h2 className="text-2xl font-bold text-gray-800">
+              Dirt Spotted (AI + CCTV)
+            </h2>
+            <span className="px-4 py-1 bg-gray-100 rounded-full text-sm">
+              {detections.length} detections
+            </span>
           </div>
 
-          <div className="space-y-3">
-            {issues.map((issue) => (
-              <div
-                key={issue.id}
-                className="flex justify-between items-center p-5 rounded-xl bg-gray-50 hover:bg-emerald-50 transition border"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="p-3 rounded-xl bg-emerald-100">
-                    <MapPin className="h-5 w-5 text-emerald-600" />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-gray-800">{issue.location}</p>
-                    <p className="text-sm text-gray-500">
-                      Reported by Citizen {issue.reporter} • {issue.date}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <span
-                    className={`px-3 py-1 rounded-full text-xs ${
-                      statusColors[issue.status]
-                    }`}
-                  >
-                    {issue.status.replace("-", " ")}
-                  </span>
-                </div>
-              </div>
-            ))}
+          <div className="overflow-x-auto">
+            <table className="min-w-full border text-sm text-left">
+              <thead className="bg-emerald-100 text-emerald-800">
+                <tr>
+                  <th className="px-4 py-2">#</th>
+                  <th className="px-4 py-2">Area</th>
+                  <th className="px-4 py-2">Garbage Type</th>
+                  <th className="px-4 py-2">Timestamp</th>
+                  <th className="px-4 py-2">Image Snapshot</th>
+                  <th className="px-4 py-2">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {detections.map((item, index) => (
+                  <tr key={item.id} className="border-b hover:bg-emerald-50">
+                    <td className="px-4 py-2">{index + 1}</td>
+                    <td className="px-4 py-2 font-semibold text-gray-800">
+                      {item.area}
+                    </td>
+                    <td className="px-4 py-2 text-gray-600">
+                      {item.category}
+                    </td>
+                    <td className="px-4 py-2 text-gray-500">
+                      {item.timestamp}
+                    </td>
+                    <td className="px-4 py-2">
+                      <img
+                        src={item.imageUrl}
+                        alt="detection"
+                        className="rounded-lg border w-24 h-16 object-cover"
+                      />
+                    </td>
+                    <td className="px-4 py-2">
+                      <button
+                        onClick={() => handleNotify(item.area)}
+                        className="flex items-center gap-2 bg-emerald-600 text-white px-3 py-1 rounded-lg text-xs hover:bg-emerald-700 transition"
+                      >
+                        <Bell className="w-4 h-4" /> Notify
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </section>
 
-        {/* Footer */}
         <footer className="text-center text-sm text-gray-600 mt-10">
-          Swachhta & LiFE Zone Monitoring System • Empowering Sustainable Communities
+          Swachhta & LiFE Zone Monitoring System • Empowering Sustainable
+          Communities
         </footer>
       </div>
     </DashboardLayout>
