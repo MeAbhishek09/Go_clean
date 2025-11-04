@@ -86,7 +86,7 @@ const ChallanIdentify = () => {
   return (
     <div className="p-6 relative">
       <h1 className="text-2xl font-bold mb-6 text-gray-800">
-        🚮 AI Challan Detection System
+        🚮 Identify and Win
       </h1>
 
       {/* Case Cards */}
