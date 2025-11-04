@@ -1,0 +1,25 @@
+version: "3.9"
+services:
+  backend:
+    build: ./backend
+    container_name: swachhta_backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+    networks:
+      - swachhta-net
+
+  frontend:
+    build: ./frontend
+    container_name: swachhta_frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+    networks:
+      - swachhta-net
+
+networks:
+  swachhta-net:
+    driver: bridge

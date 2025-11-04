@@ -1,4 +1,5 @@
 import { useState } from "react";
+import axios from "axios";
 import {
   Upload,
   MapPin,
@@ -27,10 +28,12 @@ const CitizenDashboard = () => {
     { name: "Green Hero", icon: "⭐", earned: true },
   ]);
 
-  const [selectedImage, setSelectedImage] = useState(null);
+  const [selectedImage, setSelectedImage] = useState(null); // preview
+  const [selectedImageFile, setSelectedImageFile] = useState(null); // actual file
   const [gpsLocation, setGpsLocation] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [detections, setDetections] = useState([]);
 
   const statusConfig = {
     cleaned: { label: "Cleaned", icon: CheckCircle, color: "text-green-600", bg: "bg-green-100" },
@@ -43,8 +46,9 @@ const CitizenDashboard = () => {
     const file = e.target.files[0];
     if (file) {
       setSelectedImage(URL.createObjectURL(file));
+      setSelectedImageFile(file);
       setSuccess(false);
-      // Fetch GPS location (simulated)
+      // Fetch GPS location
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           (pos) => {
@@ -57,28 +61,28 @@ const CitizenDashboard = () => {
     }
   };
 
-  // ✅ Simulate submission
-  const handleSubmit = () => {
-    if (!selectedImage) return;
-    setUploading(true);
-    setTimeout(() => {
-      setUploading(false);
-      setSuccess(true);
-      setSelectedImage(null);
-      setGpsLocation(null);
+  // ✅ ML Detection integration
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!selectedImageFile) return alert("Please select an image first");
 
-      // Add new report to list
-      setReports((prev) => [
-        ...prev,
-        {
-          id: prev.length + 1,
-          location: `Auto-tagged: ${gpsLocation ? `${gpsLocation.latitude}, ${gpsLocation.longitude}` : "Unknown"}`,
-          status: "pending",
-          date: new Date().toISOString().split("T")[0],
-          score: 0,
-        },
-      ]);
-    }, 2000);
+    const formData = new FormData();
+    formData.append("file", selectedImageFile);
+
+    try {
+      setUploading(true);
+      const res = await axios.post("http://127.0.0.1:8000/detect", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      setDetections(res.data.detections);
+      setSuccess(true);
+    } catch (err) {
+      console.error("Error during detection:", err);
+      alert("Detection failed. Check backend or console.");
+    } finally {
+      setUploading(false);
+    }
   };
 
   return (
@@ -105,66 +109,17 @@ const CitizenDashboard = () => {
           </div>
         </section>
 
-        {/* Stat Cards */}
-        <section className="grid md:grid-cols-3 gap-6 mb-10">
-          <div className="bg-white rounded-2xl shadow-md p-6 hover:shadow-lg transition">
-            <div className="flex justify-between items-center mb-4">
-              <div className="h-12 w-12 bg-gradient-to-br from-emerald-400 to-teal-500 text-white rounded-xl flex items-center justify-center">
-                <Upload className="h-6 w-6" />
-              </div>
-              <TrendingUp className="text-green-600" />
-            </div>
-            <p className="text-sm text-gray-500 mb-1">Total Reports</p>
-            <p className="text-4xl font-bold">{reports.length}</p>
-            <p className="text-green-600 text-sm mt-1">+2 this week</p>
-          </div>
-
-          <div className="bg-white rounded-2xl shadow-md p-6 hover:shadow-lg transition">
-            <div className="flex justify-between items-center mb-4">
-              <div className="h-12 w-12 bg-gradient-to-br from-green-500 to-teal-500 text-white rounded-xl flex items-center justify-center">
-                <Award className="h-6 w-6" />
-              </div>
-              <Sparkles className="text-yellow-400 animate-pulse" />
-            </div>
-            <p className="text-sm text-gray-500 mb-1">Swachhta Points</p>
-            <p className="text-4xl font-bold">30</p>
-            <div className="mt-3 h-2 bg-gray-100 rounded-full overflow-hidden">
-              <div className="h-full bg-gradient-to-r from-green-500 to-teal-400 w-3/4 animate-pulse"></div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-2xl shadow-md p-6 hover:shadow-lg transition">
-            <div className="flex justify-between items-center mb-4">
-              <div className="h-12 w-12 bg-gradient-to-br from-teal-500 to-green-400 text-white rounded-xl flex items-center justify-center">
-                <Award className="h-6 w-6" />
-              </div>
-              <span className="text-2xl">🏆</span>
-            </div>
-            <p className="text-sm text-gray-500 mb-1">Badges Earned</p>
-            <p className="text-4xl font-bold">
-              {badges.filter((b) => b.earned).length}/{badges.length}
-            </p>
-            <p className="text-gray-500 text-sm mt-1">1 more to unlock!</p>
-          </div>
-        </section>
-
-        {/* Upload + Badges */}
+        {/* Upload Report Section */}
         <section className="grid md:grid-cols-2 gap-6 mb-10">
-          {/* Upload Report */}
           <div className="bg-white rounded-2xl shadow-md p-8 hover:shadow-xl transition">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold text-gray-800">Upload Report</h2>
               <Camera className="h-6 w-6 text-emerald-600" />
             </div>
 
-            {/* Upload Area */}
             <label className="border-2 border-dashed border-emerald-300 rounded-2xl p-12 text-center hover:bg-emerald-50 transition cursor-pointer block">
               {selectedImage ? (
-                <img
-                  src={selectedImage}
-                  alt="Preview"
-                  className="mx-auto h-40 rounded-xl object-cover"
-                />
+                <img src={selectedImage} alt="Preview" className="mx-auto h-40 rounded-xl object-cover" />
               ) : (
                 <>
                   <Upload className="h-10 w-10 mx-auto text-emerald-500 mb-3 animate-bounce" />
@@ -175,42 +130,53 @@ const CitizenDashboard = () => {
               <input type="file" accept="image/*" onChange={handleImageSelect} className="hidden" />
             </label>
 
-            {/* Show location */}
+            {/* Location */}
             {gpsLocation && (
               <p className="text-xs text-gray-500 mt-2 text-center">
                 📍 Tagged Location: {gpsLocation.latitude}, {gpsLocation.longitude}
               </p>
             )}
 
-            {/* Upload Status */}
-            {uploading && <p className="text-center text-sm text-emerald-600 mt-3">Uploading...</p>}
+            {/* Status messages */}
+            {uploading && <p className="text-center text-sm text-emerald-600 mt-3">Detecting...</p>}
             {success && (
               <p className="text-center text-green-600 mt-3 font-semibold">
-                ✅ Report submitted successfully!
+                ✅ Detection complete! ({detections.length} objects found)
               </p>
             )}
 
             {/* Submit Button */}
             <button
               onClick={handleSubmit}
-              disabled={!selectedImage || uploading}
+              disabled={!selectedImageFile || uploading}
               className={`w-full mt-6 rounded-xl py-3 font-semibold text-white transition ${
-                !selectedImage || uploading
+                !selectedImageFile || uploading
                   ? "bg-gray-300 cursor-not-allowed"
                   : "bg-gradient-to-r from-emerald-500 to-teal-500 hover:shadow-lg"
               }`}
             >
-              {uploading ? "Submitting..." : "Submit Report"}
+              {uploading ? "Detecting..." : "Submit Report"}
             </button>
+
+            {/* Detection Results */}
+            {detections.length > 0 && (
+              <div className="mt-6 p-4 bg-gray-50 rounded-lg border border-emerald-100">
+                <h3 className="text-lg font-semibold mb-3 text-gray-700">Detection Results:</h3>
+                {detections.map((d, i) => (
+                  <p key={i} className="text-sm text-gray-700 mb-1">
+                    🗑️ Object: <b>{d.name}</b> — Confidence: {(d.confidence * 100).toFixed(1)}%
+                  </p>
+                ))}
+              </div>
+            )}
           </div>
 
-          {/* Badges Section (unchanged) */}
+          {/* Badges Section */}
           <div className="bg-white rounded-2xl shadow-md p-8 hover:shadow-xl transition">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold text-gray-800">Swachhta Badges</h2>
               <Award className="h-6 w-6 text-teal-600" />
             </div>
-
             <div className="grid grid-cols-2 gap-4">
               {badges.map((badge) => (
                 <div
@@ -223,16 +189,14 @@ const CitizenDashboard = () => {
                 >
                   <div className="text-4xl mb-2">{badge.icon}</div>
                   <p className="font-semibold text-gray-700">{badge.name}</p>
-                  {badge.earned && (
-                    <CheckCircle className="h-4 w-4 mx-auto text-green-500 mt-2" />
-                  )}
+                  {badge.earned && <CheckCircle className="h-4 w-4 mx-auto text-green-500 mt-2" />}
                 </div>
               ))}
             </div>
           </div>
         </section>
 
-        {/* My Reports (unchanged) */}
+        {/* My Reports */}
         <section className="bg-white rounded-2xl shadow-md p-8 mb-10 hover:shadow-xl transition">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-bold text-gray-800">My Reports</h2>
@@ -275,12 +239,11 @@ const CitizenDashboard = () => {
               );
             })}
           </div>
-          
         </section>
+
         <div className="relative z-10">
-        <ChallanIdentify />
-      </div>
-        
+          <ChallanIdentify />
+        </div>
       </div>
     </DashboardLayout>
   );
