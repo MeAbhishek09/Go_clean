@@ -1,10 +1,15 @@
 import React, { useState } from "react";
 
+import img1 from "../assets/img.jpg";
+import img2 from "../assets/img2.jpg";
+import img3 from "../assets/img3.webp";
+import img4 from "../assets/img4.jpg";
+
 const ChallanIdentify = () => {
   const [cases, setCases] = useState([
     {
       id: 1,
-      image: "https://i.ibb.co/0GdYxZ8/litter1.jpg",
+      image: img1,
       area: "Main Street",
       timestamp: "2025-11-04 01:45 PM",
       challan: 500,
@@ -13,7 +18,7 @@ const ChallanIdentify = () => {
     },
     {
       id: 2,
-      image: "https://i.ibb.co/XtwhPbM/litter2.jpg",
+      image: img2,
       area: "Station Road",
       timestamp: "2025-11-04 12:20 PM",
       challan: 1000,
@@ -22,7 +27,7 @@ const ChallanIdentify = () => {
     },
     {
       id: 3,
-      image: "https://i.ibb.co/ZV6nh6B/litter3.jpg",
+      image: img3,
       area: "Park Avenue",
       timestamp: "2025-11-03 10:10 AM",
       challan: 750,
@@ -138,70 +143,66 @@ const ChallanIdentify = () => {
       </div>
 
       {/* Modal */}
-      {showModal && (
-        <div className="fixed inset-0 z-[9999] flex justify-center items-center bg-black bg-opacity-50">
-          <div className="bg-white rounded-2xl shadow-2xl w-96 p-6 relative animate-fade-in">
-            <button
-              onClick={closeModal}
-              className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
-            >
-              ✖
-            </button>
-            <h2 className="text-xl font-bold mb-4 text-gray-800 text-center">
-              🧍 Identify Littering Person
-            </h2>
+     {/* Modal */}
+{showModal && (
+  <div className="fixed inset-0 z-[9999] flex justify-center items-center backdrop-blur-md bg-black/50">
+    <div className="relative w-[90%] max-w-md max-h-[90vh] overflow-y-auto bg-white rounded-2xl shadow-2xl p-6 animate-fade-in">
+      <button
+        onClick={closeModal}
+        className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
+      >
+        ✖
+      </button>
 
-            <form onSubmit={handleSubmit} className="space-y-3">
-              <input
-                type="text"
-                placeholder="Full Name"
-                value={formData.name}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
-                required
-                className="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-emerald-400"
-              />
-              <input
-                type="text"
-                placeholder="House No. / Address"
-                value={formData.address}
-                onChange={(e) =>
-                  setFormData({ ...formData, address: e.target.value })
-                }
-                required
-                className="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-emerald-400"
-              />
-              <input
-                type="text"
-                placeholder="Nearby Landmark"
-                value={formData.landmark}
-                onChange={(e) =>
-                  setFormData({ ...formData, landmark: e.target.value })
-                }
-                className="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-emerald-400"
-              />
-              <input
-                type="tel"
-                placeholder="Phone Number"
-                value={formData.phone}
-                onChange={(e) =>
-                  setFormData({ ...formData, phone: e.target.value })
-                }
-                required
-                className="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-emerald-400"
-              />
+      <h2 className="text-xl font-bold mb-4 text-gray-800 text-center">
+        🧍 Identify Littering Person
+      </h2>
 
-              <button
-                type="submit"
-                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-lg mt-2"
-              >
-                ✅ Submit Details
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
+      <form onSubmit={handleSubmit} className="space-y-3 pb-3">
+        <input
+          type="text"
+          placeholder="Full Name"
+          value={formData.name}
+          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+          required
+          className="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-emerald-400"
+        />
+        <input
+          type="text"
+          placeholder="House No. / Address"
+          value={formData.address}
+          onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+          required
+          className="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-emerald-400"
+        />
+        <input
+          type="text"
+          placeholder="Nearby Landmark"
+          value={formData.landmark}
+          onChange={(e) =>
+            setFormData({ ...formData, landmark: e.target.value })
+          }
+          className="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-emerald-400"
+        />
+        <input
+          type="tel"
+          placeholder="Phone Number"
+          value={formData.phone}
+          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+          required
+          className="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-emerald-400"
+        />
+
+        <button
+          type="submit"
+          className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-lg mt-2"
+        >
+          ✅ Submit Details
+        </button>
+      </form>
+    </div>
+  </div>
+)}
     </div>
   );
 };
