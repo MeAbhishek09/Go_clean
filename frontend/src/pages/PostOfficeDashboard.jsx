@@ -1,4 +1,9 @@
 import { useState } from "react";
+import img1 from "../assets/img.jpg";
+import img2 from "../assets/img2.jpg";
+import img3 from "../assets/img3.webp";
+import img4 from "../assets/img4.jpg";
+
 import {
   MapContainer,
   TileLayer,
@@ -6,6 +11,7 @@ import {
   Tooltip,
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
+
 import {
   TrendingUp,
   CheckCircle,
@@ -16,6 +22,7 @@ import {
   PieChart as PieIcon,
   Calendar,
 } from "lucide-react";
+
 import {
   LineChart,
   Line,
@@ -29,6 +36,7 @@ import {
   Cell,
   Legend,
 } from "recharts";
+
 import DashboardLayout from "../components/DashboardLayout";
 
 const PostOfficeDashboard = () => {
@@ -67,14 +75,14 @@ const PostOfficeDashboard = () => {
         area: "Main Street",
         category: "Plastic Waste",
         timestamp: "2025-11-03 09:42 AM",
-        imageUrl: "https://i.ibb.co/0GdYxZ8/litter1.jpg",
+        imageUrl: img1,
       },
       {
         id: 2,
         area: "Park Avenue",
         category: "Wet Garbage",
         timestamp: "2025-11-03 10:44 AM",
-        imageUrl: "https://i.ibb.co/XtwhPbM/litter2.jpg",
+        imageUrl: img2,
       },
     ],
     "2025-11-04": [
@@ -83,14 +91,14 @@ const PostOfficeDashboard = () => {
         area: "Station Road",
         category: "Paper Litter",
         timestamp: "2025-11-04 08:20 AM",
-        imageUrl: "https://i.ibb.co/ZV6nh6B/litter3.jpg",
+        imageUrl: img3,
       },
       {
         id: 4,
         area: "Market Square",
         category: "Organic Waste",
         timestamp: "2025-11-04 10:05 AM",
-        imageUrl: "https://i.ibb.co/0J9sKcP/challan1.jpg",
+        imageUrl: img4,
       },
     ],
     "2025-11-05": [
@@ -99,14 +107,14 @@ const PostOfficeDashboard = () => {
         area: "Old Town",
         category: "Plastic Waste",
         timestamp: "2025-11-05 07:45 AM",
-        imageUrl: "https://i.ibb.co/8NtH3nF/challan2.jpg",
+        imageUrl: img2,
       },
       {
         id: 6,
         area: "Bus Stand",
         category: "Wet Garbage",
         timestamp: "2025-11-05 09:15 AM",
-        imageUrl: "https://i.ibb.co/ZV6nh6B/litter3.jpg",
+        imageUrl: img4,
       },
     ],
   };
@@ -116,14 +124,14 @@ const PostOfficeDashboard = () => {
     "2025-11-03": [
       {
         id: 1,
-        image: "https://i.ibb.co/0GdYxZ8/litter1.jpg",
+        image: img1,
         area: "Main Street",
         timestamp: "2025-11-03 09:10 AM",
         status: "Pending Verification",
       },
       {
         id: 2,
-        image: "https://i.ibb.co/XtwhPbM/litter2.jpg",
+        image: img2,
         area: "Station Road",
         timestamp: "2025-11-03 11:35 AM",
         status: "Identified - Reward ₹50",
@@ -132,14 +140,14 @@ const PostOfficeDashboard = () => {
     "2025-11-04": [
       {
         id: 3,
-        image: "https://i.ibb.co/ZV6nh6B/litter3.jpg",
+        image: img3,
         area: "Park Avenue",
         timestamp: "2025-11-04 10:25 AM",
         status: "Identified - Reward ₹75",
       },
       {
         id: 4,
-        image: "https://i.ibb.co/0J9sKcP/challan1.jpg",
+        image: img4,
         area: "City Mall Junction",
         timestamp: "2025-11-04 01:40 PM",
         status: "Challan Generated - ₹500 Fine",
@@ -174,6 +182,21 @@ const PostOfficeDashboard = () => {
   const detections = aiDetections[selectedDay];
   const challans = challanByDate[selectedDay] || [];
 
+  // --- Map Marker Data ---
+  const zoneMarkers = [
+    { name: "Main Street", coords: [22.256, 84.900], status: "Clean" },
+    { name: "Station Road", coords: [22.257, 84.905], status: "Moderate" },
+    { name: "Market Square", coords: [22.259, 84.907], status: "Needs Attention" },
+    { name: "Park Avenue", coords: [22.255, 84.903], status: "Clean" },
+    { name: "Bus Stand", coords: [22.260, 84.910], status: "Needs Attention" },
+  ];
+
+  const getColor = (status) => {
+    if (status === "Clean") return "green";
+    if (status === "Moderate") return "orange";
+    return "red";
+  };
+
   return (
     <DashboardLayout role="post-office">
       <div className="p-8 text-gray-800">
@@ -187,7 +210,7 @@ const PostOfficeDashboard = () => {
 
         {/* Overview Cards */}
         <section className="grid md:grid-cols-4 gap-6 mb-10">
-          {[
+          {[ 
             {
               icon: <TrendingUp className="h-8 w-8 mx-auto text-green-600 mb-2" />,
               label: "Zone Score",
@@ -217,10 +240,7 @@ const PostOfficeDashboard = () => {
               color: "text-green-600",
             },
           ].map((card, i) => (
-            <div
-              key={i}
-              className="bg-white rounded-2xl shadow-md p-6 text-center hover:shadow-lg transition"
-            >
+            <div key={i} className="bg-white rounded-2xl shadow-md p-6 text-center hover:shadow-lg transition">
               {card.icon}
               <p className="text-sm text-gray-500">{card.label}</p>
               <p className="text-4xl font-bold text-gray-800">{card.value}</p>
@@ -257,13 +277,7 @@ const PostOfficeDashboard = () => {
                 <XAxis dataKey="day" />
                 <YAxis />
                 <ReTooltip />
-                <Line
-                  type="monotone"
-                  dataKey="score"
-                  stroke="#16a34a"
-                  strokeWidth={3}
-                  dot={{ r: 4 }}
-                />
+                <Line type="monotone" dataKey="score" stroke="#16a34a" strokeWidth={3} dot={{ r: 4 }} />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -275,16 +289,7 @@ const PostOfficeDashboard = () => {
             </h2>
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
-                <Pie
-                  data={garbageStats}
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={100}
-                  dataKey="value"
-                  label={({ name, percent }) =>
-                    `${name} ${(percent * 100).toFixed(0)}%`
-                  }
-                >
+                <Pie data={garbageStats} cx="50%" cy="50%" outerRadius={100} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
                   {garbageStats.map((entry, index) => (
                     <Cell key={index} fill={COLORS[index % COLORS.length]} />
                   ))}
@@ -293,6 +298,43 @@ const PostOfficeDashboard = () => {
                 <Legend />
               </PieChart>
             </ResponsiveContainer>
+          </div>
+        </section>
+
+        {/* 🗺️ Zone Map Section */}
+        <section className="bg-white rounded-2xl shadow-md p-8 mb-10 hover:shadow-xl transition">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-2xl font-bold text-gray-800">Zone Map</h2>
+            <span className="text-gray-500 text-sm">12 sub-areas monitored</span>
+          </div>
+
+          <MapContainer center={[22.257, 84.905]} zoom={14} className="h-64 rounded-xl border z-0">
+            <TileLayer
+              attribution='&copy; <a href="http://osm.org">OpenStreetMap</a> contributors'
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
+            {zoneMarkers.map((zone, idx) => (
+              <CircleMarker
+                key={idx}
+                center={zone.coords}
+                radius={10}
+                pathOptions={{ color: getColor(zone.status), fillOpacity: 0.7 }}
+              >
+                <Tooltip>{zone.name} - {zone.status}</Tooltip>
+              </CircleMarker>
+            ))}
+          </MapContainer>
+
+          <div className="flex justify-around mt-6 text-sm text-gray-600">
+            <span className="flex items-center gap-2">
+              <span className="w-3 h-3 rounded-full bg-green-400"></span> Clean
+            </span>
+            <span className="flex items-center gap-2">
+              <span className="w-3 h-3 rounded-full bg-yellow-400"></span> Moderate
+            </span>
+            <span className="flex items-center gap-2">
+              <span className="w-3 h-3 rounded-full bg-red-400"></span> Needs Attention
+            </span>
           </div>
         </section>
 
@@ -326,18 +368,10 @@ const PostOfficeDashboard = () => {
                     <td className="px-4 py-2 font-semibold text-gray-800">
                       {item.area}
                     </td>
-                    <td className="px-4 py-2 text-gray-600">
-                      {item.category}
-                    </td>
-                    <td className="px-4 py-2 text-gray-500">
-                      {item.timestamp}
-                    </td>
+                    <td className="px-4 py-2 text-gray-600">{item.category}</td>
+                    <td className="px-4 py-2 text-gray-500">{item.timestamp}</td>
                     <td className="px-4 py-2">
-                      <img
-                        src={item.imageUrl}
-                        alt="detection"
-                        className="rounded-lg border w-24 h-16 object-cover"
-                      />
+                      <img src={item.imageUrl} alt="detection" className="rounded-lg border w-24 h-16 object-cover" />
                     </td>
                     <td className="px-4 py-2">
                       <button
@@ -363,21 +397,10 @@ const PostOfficeDashboard = () => {
           {challans.length > 0 ? (
             <div className="grid md:grid-cols-3 sm:grid-cols-1 gap-6">
               {challans.map((incident) => (
-                <div
-                  key={incident.id}
-                  className="p-4 rounded-2xl shadow-lg hover:shadow-xl transition-all bg-white border"
-                >
-                  <img
-                    src={incident.image}
-                    alt="Incident"
-                    className="rounded-xl mb-4 w-full h-48 object-cover"
-                  />
-                  <h2 className="text-lg font-semibold text-gray-800">
-                    {incident.area}
-                  </h2>
-                  <p className="text-sm text-gray-500">
-                    🕒 {incident.timestamp}
-                  </p>
+                <div key={incident.id} className="p-4 rounded-2xl shadow-lg hover:shadow-xl transition-all bg-white border">
+                  <img src={incident.image} alt="Incident" className="rounded-xl mb-4 w-full h-48 object-cover" />
+                  <h2 className="text-lg font-semibold text-gray-800">{incident.area}</h2>
+                  <p className="text-sm text-gray-500">🕒 {incident.timestamp}</p>
                   <p
                     className={`mt-2 text-sm font-bold ${
                       incident.status.includes("Identified") ||
@@ -401,8 +424,7 @@ const PostOfficeDashboard = () => {
         </section>
 
         <footer className="text-center text-sm text-gray-600 mt-10">
-          Swachhta & LiFE Zone Monitoring System • AI-driven Cleanliness +
-          Compliance
+          Swachhta & LiFE Zone Monitoring System • AI-driven Cleanliness + Compliance
         </footer>
       </div>
     </DashboardLayout>
