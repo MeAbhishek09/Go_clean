@@ -28,13 +28,13 @@ const CitizenDashboard = () => {
     { name: "Green Hero", icon: "⭐", earned: true },
   ]);
 
-  const [selectedImage, setSelectedImage] = useState(null);
+  const [selectedImage, setSelectedImage] = useState(null);  // preview
+  const [selectedFile, setSelectedFile] = useState(null);    // actual file for API
   const [gpsLocation, setGpsLocation] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [detections, setDetections] = useState([]);
   const [rewardPoints, setRewardPoints] = useState(50); // initial reward points
-  const [uploadCount, setUploadCount] = useState(0); // track uploads
 
   const statusConfig = {
     cleaned: { label: "Cleaned", icon: CheckCircle, color: "text-green-600", bg: "bg-green-100" },
@@ -46,8 +46,10 @@ const CitizenDashboard = () => {
   const handleImageSelect = (e) => {
     const file = e.target.files[0];
     if (file) {
+      setSelectedFile(file);
       setSelectedImage(URL.createObjectURL(file));
       setSuccess(false);
+      setDetections([]);
 
       // GPS tagging
       if (navigator.geolocation) {
@@ -62,48 +64,52 @@ const CitizenDashboard = () => {
     }
   };
 
-  // 🧠 Detection + reward logic (1st → Garbage, 2nd → Clean, 3rd → Garbage → repeat)
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!selectedImage) return alert("Please select an image first!");
+  // 🧠 REAL detection using your FastAPI + YOLO backend
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+  if (!selectedFile) {
+    alert("Please select an image first!");
+    return;
+  }
 
-    setUploading(true);
+  setUploading(true);
+  setSuccess(false);
 
-    setTimeout(() => {
-      const newCount = uploadCount + 1;
-      setUploadCount(newCount);
+  try {
+    const formData = new FormData();
+    formData.append("file", selectedFile);
 
-      let result;
-      if (newCount % 3 === 1) {
-        result = { name: "Garbage Detected", confidence: 0.95 };
-      } else if (newCount % 3 === 2) {
-        result = { name: "Clean Area", confidence: 0.92 };
-      } else {
-        result = { name: "Garbage Detected", confidence: 0.96 };
-      }
+    const res = await fetch("http://localhost:8000/detect", {
+      method: "POST",
+      body: formData,
+    });
 
-      setDetections([result]);
-      setSuccess(true);
-      setUploading(false);
+    if (!res.ok) {
+      throw new Error("Detection API error");
+    }
 
-      const newReport = {
-        id: reports.length + 1,
-        location: gpsLocation
-          ? `Lat: ${gpsLocation.latitude.toFixed(2)}, Long: ${gpsLocation.longitude.toFixed(2)}`
-          : "Unknown Location",
-        status: result.name === "Garbage Detected" ? "pending" : "cleaned",
-        date: new Date().toISOString().split("T")[0],
-        score: result.name === "Garbage Detected" ? 10 : 0,
-      };
+    const data = await res.json(); // { hasGarbage, max_confidence, detections }
 
-      setReports((prev) => [newReport, ...prev]);
+    const hasGarbage = data.hasGarbage;
+    const maxConf = data.max_confidence ?? 0;
 
-      // 💰 Add reward if garbage detected
-      if (result.name === "Garbage Detected") {
-        setRewardPoints((prev) => prev + 10);
-      }
-    }, 2000);
-  };
+    const displayResult = {
+      name: hasGarbage ? "Garbage Detected" : "Clean Area",
+      confidence: maxConf.toFixed(2),
+    };
+
+    setDetections([displayResult]);
+    setSuccess(true);
+    setUploading(false);
+
+    // ...report + rewards logic...
+  } catch (err) {
+    console.error(err);
+    setUploading(false);
+    alert("Error during detection. Please check backend console.");
+  }
+};
+
 
   // 🎁 Redeem rewards dynamically
   const handleRedeem = () => {
@@ -182,9 +188,9 @@ const CitizenDashboard = () => {
 
             <button
               onClick={handleSubmit}
-              disabled={!selectedImage || uploading}
+              disabled={!selectedFile || uploading}
               className={`w-full mt-6 rounded-xl py-3 font-semibold text-white transition ${
-                !selectedImage || uploading
+                !selectedFile || uploading
                   ? "bg-gray-300 cursor-not-allowed"
                   : "bg-gradient-to-r from-emerald-500 to-teal-500 hover:shadow-lg"
               }`}
