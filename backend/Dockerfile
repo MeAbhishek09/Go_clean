@@ -1,5 +1,4 @@
-# Use official PyTorch CPU image (already has torch etc.)
-FROM pytorch/pytorch:2.0.1-cpu
+FROM python:3.10-slim
 
 # Install system libs needed by OpenCV (cv2)
 RUN apt-get update && apt-get install -y \
@@ -9,9 +8,15 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 
-# Copy requirements and install Python deps
+# Copy requirements and install Python deps (WITHOUT torch/torchvision here)
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
+
+# Install CPU-only PyTorch + torchvision
+RUN pip install --no-cache-dir \
+    torch==2.2.1 \
+    torchvision==0.17.1 \
+    --index-url https://download.pytorch.org/whl/cpu
 
 # Copy the backend code (main.py, best.pt, etc.)
 COPY . .
