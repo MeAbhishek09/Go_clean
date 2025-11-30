@@ -1,6 +1,9 @@
-# --- HARD FIX FOR WINDOWS PosixPath ISSUE ---
+import os
 import pathlib
-pathlib.PosixPath = pathlib.WindowsPath
+
+# Apply this hack ONLY on Windows
+if os.name == "nt":
+    pathlib.PosixPath = pathlib.WindowsPath
 
 from fastapi import FastAPI, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
@@ -10,7 +13,7 @@ import numpy as np
 import io
 import torch
 import uvicorn
-import os
+
 
 app = FastAPI()
 
