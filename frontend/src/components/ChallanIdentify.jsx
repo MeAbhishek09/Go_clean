@@ -1,11 +1,15 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
+import IdentifyModal from "./IdentifyModal";
 
 import img1 from "../assets/img.jpg";
 import img2 from "../assets/img2.jpg";
 import img3 from "../assets/img3.webp";
-import img4 from "../assets/img4.jpg";
 
-const ChallanIdentify = () => {
+/**
+ * ChallanIdentify: cards only
+ * Modal is rendered via portal (IdentifyModal).
+ */
+export default function ChallanIdentify() {
   const [cases, setCases] = useState([
     {
       id: 1,
@@ -33,178 +37,117 @@ const ChallanIdentify = () => {
       challan: 750,
       identified: true,
       reward: 75,
+      details: { name: "Ramesh", address: "Park Ave 12" },
     },
   ]);
 
-  const [totalReward, setTotalReward] = useState(
-    cases.reduce((acc, curr) => acc + curr.reward, 0)
+  const totalReward = useMemo(
+    () => cases.reduce((acc, curr) => acc + (curr.reward || 0), 0),
+    [cases]
   );
 
-  const [showModal, setShowModal] = useState(false);
-  const [selectedCase, setSelectedCase] = useState(null);
-  const [formData, setFormData] = useState({
-    name: "",
-    address: "",
-    landmark: "",
-    phone: "",
-  });
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedCaseId, setSelectedCaseId] = useState(null);
 
-  const openModal = (id) => {
-    setSelectedCase(id);
-    setShowModal(true);
+  const openModal = (caseId) => {
+    setSelectedCaseId(caseId);
+    setModalOpen(true);
   };
-
   const closeModal = () => {
-    setShowModal(false);
-    setFormData({ name: "", address: "", landmark: "", phone: "" });
+    setModalOpen(false);
+    setSelectedCaseId(null);
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
+  const handleModalSubmit = (formData) => {
+    if (!selectedCaseId) return;
     setCases((prev) =>
       prev.map((item) =>
-        item.id === selectedCase
+        item.id === selectedCaseId
           ? {
               ...item,
               identified: true,
-              reward: item.challan * 0.1,
+              reward: Math.round(item.challan * 0.1),
               details: formData,
             }
           : item
       )
     );
-
-    const caseData = cases.find((c) => c.id === selectedCase);
-    if (caseData && !caseData.identified) {
-      setTotalReward((prev) => prev + caseData.challan * 0.1);
-    }
-
     closeModal();
   };
 
   return (
-    <div className="p-6 relative">
-      <h1 className="text-2xl font-bold mb-6 text-gray-800">
-        🚮 Identify and Win
-      </h1>
+    <div className="relative">
+      <h1 className="text-2xl font-bold mb-6 text-gray-800">🚮 Identify and Win</h1>
 
-      {/* Case Cards */}
-      <div className="grid md:grid-cols-3 sm:grid-cols-1 gap-6">
-        {cases.map((c) => (
-          <div
-            key={c.id}
-            className="p-4 rounded-2xl shadow-lg bg-white hover:shadow-xl transition-all border border-gray-200"
-          >
-            <img
-              src={c.image}
-              alt="Littering"
-              className="rounded-xl mb-4 w-full h-48 object-cover"
-            />
-            <h2 className="text-lg font-semibold text-gray-800">{c.area}</h2>
-            <p className="text-sm text-gray-500">🕒 {c.timestamp}</p>
-            <p className="text-sm text-gray-500">💰 Challan: ₹{c.challan}</p>
-            <p
-              className={`mt-2 text-sm font-bold ${
-                c.identified ? "text-green-600" : "text-red-500"
-              }`}
-            >
-              Status: {c.identified ? "Identified" : "Pending"}
-            </p>
+      {/* Cards row: md+ three across, mobile scrollable */}
+      <div className="w-full">
+        <div className="block md:hidden overflow-x-auto -mx-3 pb-3">
+          <div className="flex gap-6 px-3">
+            {cases.map((c) => (
+              <div key={c.id} className="flex-none w-[320px]">
+                <article className="p-4 rounded-2xl shadow-lg bg-white border border-gray-200 h-full flex flex-col">
+                  <img src={c.image} alt={c.area} className="rounded-xl mb-4 w-full h-40 object-cover" />
+                  <div className="flex-1">
+                    <h2 className="text-lg font-semibold text-gray-800">{c.area}</h2>
+                    <p className="text-sm text-gray-500">🕒 {c.timestamp}</p>
+                    <p className="text-sm text-gray-500">💰 Challan: ₹{c.challan}</p>
 
-            {c.identified ? (
-              <div className="mt-3 bg-green-50 p-2 rounded-lg">
-                <p className="text-green-700 font-semibold">
-                  🎉 Reward Earned: ₹{c.reward}
+                    <p className={`mt-2 text-sm font-bold ${c.identified ? "text-green-600" : "text-red-500"}`}>
+                      Status: {c.identified ? "Identified" : "Pending"}
+                    </p>
+
+                    {c.identified ? (
+                      <div className="mt-3 bg-green-50 p-2 rounded-lg">
+                        <p className="text-green-700 font-semibold">🎉 Reward Earned: ₹{c.reward}</p>
+                        {c.details && <p className="text-sm text-gray-600 mt-1">👤 {c.details.name}, {c.details.address}</p>}
+                      </div>
+                    ) : (
+                      <button onClick={() => openModal(c.id)} className="mt-3 w-full bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-lg">Identify Person</button>
+                    )}
+                  </div>
+                </article>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="hidden md:grid md:grid-cols-3 gap-6">
+          {cases.map((c) => (
+            <article key={c.id} className="p-4 rounded-2xl shadow-lg bg-white border border-gray-200 h-full flex flex-col">
+              <img src={c.image} alt={c.area} className="rounded-xl mb-4 w-full h-48 object-cover" />
+              <div className="flex-1">
+                <h2 className="text-lg font-semibold text-gray-800">{c.area}</h2>
+                <p className="text-sm text-gray-500">🕒 {c.timestamp}</p>
+                <p className="text-sm text-gray-500">💰 Challan: ₹{c.challan}</p>
+
+                <p className={`mt-2 text-sm font-bold ${c.identified ? "text-green-600" : "text-red-500"}`}>
+                  Status: {c.identified ? "Identified" : "Pending"}
                 </p>
-                {c.details && (
-                  <p className="text-sm text-gray-600 mt-1">
-                    👤 {c.details.name}, {c.details.address}
-                  </p>
+
+                {c.identified ? (
+                  <div className="mt-3 bg-green-50 p-2 rounded-lg">
+                    <p className="text-green-700 font-semibold">🎉 Reward Earned: ₹{c.reward}</p>
+                    {c.details && <p className="text-sm text-gray-600 mt-1">👤 {c.details.name}, {c.details.address}</p>}
+                  </div>
+                ) : (
+                  <button onClick={() => openModal(c.id)} className="mt-3 w-full bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-lg">Identify Person</button>
                 )}
               </div>
-            ) : (
-              <button
-                onClick={() => openModal(c.id)}
-                className="mt-3 w-full bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-lg"
-              >
-                Identify Person
-              </button>
-            )}
-          </div>
-        ))}
+            </article>
+          ))}
+        </div>
       </div>
 
-      {/* Total Rewards */}
       <div className="text-right mt-4">
-        <p className="text-lg font-semibold text-emerald-700">
-          Total Rewards Earned: ₹{totalReward}
-        </p>
+        <p className="text-lg font-semibold text-emerald-700">Total Rewards Earned: ₹{totalReward}</p>
       </div>
 
-      {/* Modal */}
-     {/* Modal */}
-{showModal && (
-  <div className="fixed inset-0 z-[9999] flex justify-center items-center backdrop-blur-md bg-black/50">
-    <div className="relative w-[90%] max-w-md max-h-[90vh] overflow-y-auto bg-white rounded-2xl shadow-2xl p-6 animate-fade-in">
-      <button
-        onClick={closeModal}
-        className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
-      >
-        ✖
-      </button>
-
-      <h2 className="text-xl font-bold mb-4 text-gray-800 text-center">
-        🧍 Identify Littering Person
-      </h2>
-
-      <form onSubmit={handleSubmit} className="space-y-3 pb-3">
-        <input
-          type="text"
-          placeholder="Full Name"
-          value={formData.name}
-          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-          required
-          className="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-emerald-400"
-        />
-        <input
-          type="text"
-          placeholder="House No. / Address"
-          value={formData.address}
-          onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-          required
-          className="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-emerald-400"
-        />
-        <input
-          type="text"
-          placeholder="Nearby Landmark"
-          value={formData.landmark}
-          onChange={(e) =>
-            setFormData({ ...formData, landmark: e.target.value })
-          }
-          className="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-emerald-400"
-        />
-        <input
-          type="tel"
-          placeholder="Phone Number"
-          value={formData.phone}
-          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-          required
-          className="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-emerald-400"
-        />
-
-        <button
-          type="submit"
-          className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-lg mt-2"
-        >
-          ✅ Submit Details
-        </button>
-      </form>
-    </div>
-  </div>
-)}
+      <IdentifyModal
+        open={modalOpen}
+        onClose={closeModal}
+        onSubmit={handleModalSubmit}
+        initialData={selectedCaseId ? cases.find((c) => c.id === selectedCaseId)?.details || {} : {}}
+      />
     </div>
   );
-};
-
-export default ChallanIdentify;
+}
