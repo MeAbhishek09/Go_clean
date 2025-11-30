@@ -1,9 +1,7 @@
 # --- HARD FIX FOR WINDOWS PosixPath ISSUE ---
 import pathlib
-# On Windows, PosixPath can't be instantiated, so we map it to WindowsPath
 pathlib.PosixPath = pathlib.WindowsPath
 
-# Now import everything else
 from fastapi import FastAPI, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -11,34 +9,30 @@ from PIL import Image
 import numpy as np
 import io
 import torch
+import uvicorn
+import os
 
 app = FastAPI()
 
-# Allow frontend (Vite) to call this API
+# CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-        "*"  # you can lock this later
-    ],
+    allow_origins=["*"],  # you can restrict after deployment
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# 🔥 Load YOLOv5 model using torch.hub with your best.pt
-# Make sure best.pt is in the SAME folder as this main.py
+# Load YOLOv5 model
 model = torch.hub.load(
     'ultralytics/yolov5',
     'custom',
     path='best.pt',
-    force_reload=True,  # force re-download / re-load, ignore old cache
-    trust_repo=True     # required in newer torch versions
+    trust_repo=True,
 )
 
+CONF_THRESHOLD = 0.5
 
-CONF_THRESHOLD = 0.5  # you can tune this
 
 @app.post("/detect")
 async def detect(file: UploadFile = File(...)):
@@ -66,3 +60,11 @@ async def detect(file: UploadFile = File(...)):
         "max_confidence": max_conf,
         "detections": detections,
     })
+
+
+# -------------------------
+#     RUN ON RENDER
+# -------------------------
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run("main:app", host="0.0.0.0", port=port)

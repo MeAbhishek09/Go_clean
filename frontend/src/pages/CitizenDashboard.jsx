@@ -64,8 +64,12 @@ const CitizenDashboard = () => {
     }
   };
 
-  // 🧠 REAL detection using your FastAPI + YOLO backend
-  const handleSubmit = async (e) => {
+
+  const API_BASE =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+
+// 🧠 REAL detection using your FastAPI + YOLO backend
+const handleSubmit = async (e) => {
   e.preventDefault();
   if (!selectedFile) {
     alert("Please select an image first!");
@@ -79,7 +83,7 @@ const CitizenDashboard = () => {
     const formData = new FormData();
     formData.append("file", selectedFile);
 
-    const res = await fetch("http://localhost:8000/detect", {
+    const res = await fetch(`${API_BASE}/detect`, {
       method: "POST",
       body: formData,
     });
@@ -101,8 +105,6 @@ const CitizenDashboard = () => {
     setDetections([displayResult]);
     setSuccess(true);
     setUploading(false);
-
-    // ...report + rewards logic...
   } catch (err) {
     console.error(err);
     setUploading(false);
