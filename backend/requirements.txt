@@ -1,11 +1,34 @@
-fastapi
-uvicorn
-pydantic
-opencv-python-headless
-numpy
+# fastapi
+# uvicorn
+# pydantic
+# opencv-python-headless
+# numpy
 # torch
 # torchvision
+# pillow
+# python-multipart
+# ultralytics
+# pandas
+
+# for render 
+
+fastapi
+uvicorn
 pillow
+numpy==1.26.4
 python-multipart
+
+# YOLO / Ultralytics core
 ultralytics
+opencv-python-headless
+
+# Things Ultralytics / YOLOv5 imports internally
 pandas
+tqdm
+matplotlib
+PyYAML
+requests
+scipy
+seaborn
+psutil
+thop
