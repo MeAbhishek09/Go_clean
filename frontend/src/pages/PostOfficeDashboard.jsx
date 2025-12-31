@@ -11,6 +11,7 @@ import {
   Tooltip,
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
+import WorkersSection from "../components/WorkersSection";
 
 import {
   TrendingUp,
@@ -421,6 +422,10 @@ const PostOfficeDashboard = () => {
               No challan incidents recorded on {selectedDay}.
             </p>
           )}
+        </section>
+           {/* 👷 Workers Section (ADDED AT THE END ONLY) */}
+        <section className="bg-white rounded-2xl shadow-md p-8 mt-12 hover:shadow-xl transition">
+          <WorkersSection />
         </section>
 
         <footer className="text-center text-sm text-gray-600 mt-10">
